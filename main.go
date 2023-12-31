@@ -29,7 +29,6 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 	h.ParseMultipartForm(200)
 
 	form := h.MultipartForm
-
 	for key := range form.File {
 		file, header, err := h.FormFile(key)
 		if err != nil {
@@ -48,21 +47,4 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 			log.Fatal(err)
 		}
 	}
-	// form, err := h.MultipartReader()
-	// for {
-	// 	part, err_part := form.NextPart()
-	// 	if err_part == io.EOF {
-	// 		break
-	// 	}
-	// 	if part.FormName() == "file" {
-	// 		x, err := part.Read()
-	// 		i
-	// 		// go fmt.Println()
-	// 	}
-	// }
-	// body, err := io.ReadAll(h.Body)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// go fmt.Println(body)
 }

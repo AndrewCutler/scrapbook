@@ -1,13 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrap Book</title>
-    <script src="./index.js"></script>
-</head>
-<body>
-    <h2>Upload video</h2>
-    <input type="file" name="upload" id="upload" capture accept=".mp4">
-</body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Scrap Book</title>
+		<script src="./index.js"></script>
+		<style>
+			body {
+				background: #333;
+				color: #b5b5b5;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>Choose videos to upload</h2>
+		<div id="input-container" style="display: flex; flex-direction: column">
+			<input
+				type="file"
+				name="upload"
+				id="upload"
+				multiple
+				capture
+				accept="video/*"
+			/>
+			<!-- only for mp4 -->
+			<!-- <input
+				type="file"
+				name="upload"
+				id="upload"
+				multiple
+				capture
+				accept=".mp4"
+			/> -->
+		</div>
+		<ul id="previews" style="display: inline-block"></ul>
+		<br />
+		<button type="button" id="submit">Upload</button>
+	</body>
 </html>
