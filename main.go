@@ -20,7 +20,12 @@ func main() {
 	}
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func saveFile(w http.ResponseWriter, h *http.Request) {
+	enableCors(&w)
 	h.ParseMultipartForm(200)
 
 	form := h.MultipartForm
@@ -28,8 +33,7 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 	for key := range form.File {
 		file, header, err := h.FormFile(key)
 		if err != nil {
-			fmt.Println(err)
-			return
+			log.Fatal(err)
 		}
 		defer file.Close()
 		fmt.Printf("Writing file %s to disk\n", header.Filename)
