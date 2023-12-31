@@ -22,5 +22,5 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(body)
+	go fmt.Println(body)
 }
