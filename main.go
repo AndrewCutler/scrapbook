@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-var fileDir = "./files"
+var fileDir = "./files/"
 
 func main() {
 	fs := http.FileServer(http.Dir("./client"))
@@ -32,7 +32,7 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 			return
 		}
 		defer file.Close()
-		fmt.Println(header.Filename)
+		fmt.Printf("Writing file %s to disk\n", header.Filename)
 
 		out, err := os.Create(fileDir + header.Filename)
 		if err != nil {
