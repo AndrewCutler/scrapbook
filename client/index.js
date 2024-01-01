@@ -5,9 +5,22 @@ window.onload = function () {
 
 	const uploadButton = document.querySelector('#submit');
 	uploadButton.style.display = 'none';
-	uploadButton.addEventListener('click', function () {
-		console.log('clicked');
+	uploadButton.addEventListener('click', async function () {
 		// revoke object urls
+		const formData = new FormData();
+		// for (const file of input.files) {
+		// 	formData.append('file[]', file);
+		// }
+		for (let i = 0; i < input.files.length; i++) {
+			const file = input.files[i];
+			console.log({ i, file });
+			formData.append('files', file);
+		}
+
+		await fetch('http://10.0.0.73:8000/save', {
+			method: 'POST',
+			body: formData,
+		}).catch(console.error);
 	});
 
 	function createPreviewElement(file, index) {
@@ -51,7 +64,7 @@ window.onload = function () {
 	}
 
 	const input = document.querySelector('#upload');
-	input.addEventListener('change', async function () {
+	input.addEventListener('change', function () {
 		uploadButton.style.display = input.files.length > 0 ? 'block' : 'none';
 
 		if (input.files.length > MAX_FILES) {
