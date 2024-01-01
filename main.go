@@ -50,23 +50,4 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 			log.Fatal(err)
 		}
 	}
-	fmt.Print(len(files))
-	// for key := range form.File {
-	// 	file, header, err := h.FormFile(key)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	defer file.Close()
-	// 	fmt.Printf("Writing file %s to disk\n", header.Filename)
-
-	// 	out, err := os.Create(fileDir + header.Filename)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	defer out.Close()
-
-	// 	if _, err := io.Copy(out, file); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
 }

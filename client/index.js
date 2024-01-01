@@ -8,9 +8,6 @@ window.onload = function () {
 	uploadButton.addEventListener('click', async function () {
 		// revoke object urls
 		const formData = new FormData();
-		// for (const file of input.files) {
-		// 	formData.append('file[]', file);
-		// }
 		for (let i = 0; i < input.files.length; i++) {
 			const file = input.files[i];
 			console.log({ i, file });
@@ -83,17 +80,5 @@ window.onload = function () {
 			file = input.files[i];
 			createPreviewElement(file, i);
 		}
-
-		// console.log(input.files);
-		// if (input.files.length === 1) {
-		// 	const [file] = input.files;
-		// 	const formData = new FormData();
-		// 	formData.append('file', file);
-
-		// 	await fetch('http://10.0.0.73:8000/save', {
-		// 		method: 'POST',
-		// 		body: formData,
-		// 	}).catch(console.error);
-		// }
 	});
 };
