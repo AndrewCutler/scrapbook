@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -10,9 +11,15 @@ import (
 
 var fileDir = "./files/"
 
+type FileMeta struct {
+	Name string
+	Size int64
+}
+
 func main() {
 	fs := http.FileServer(http.Dir("./client"))
 	http.HandleFunc("/save", saveFile)
+	http.HandleFunc("/files", getFileData)
 	http.Handle("/", fs)
 
 	if err := http.ListenAndServe(":8000", nil); err != nil {
@@ -50,4 +57,27 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 			log.Fatal(err)
 		}
 	}
+}
+
+func getFileData(w http.ResponseWriter, h *http.Request) {
+	dir, err := os.ReadDir(fileDir)
+	if err != nil {
+		log.Fatal("Cannot read file directory")
+	}
+
+	var filemeta []FileMeta
+	for _, f := range dir {
+		fi, err := os.Stat(fileDir + f.Name())
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		filemeta = append(filemeta, FileMeta{
+			Name: fi.Name(),
+			Size: fi.Size(),
+		})
+	}
+
+	w.Header().Set("Content-Type", "application-json")
+	json.NewEncoder(w).Encode(filemeta)
 }
