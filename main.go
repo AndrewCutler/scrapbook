@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 var fileDir = "./files/"
@@ -17,14 +20,15 @@ type FileMeta struct {
 }
 
 func main() {
-	fs := http.FileServer(http.Dir("./client"))
-	http.HandleFunc("/save", saveFile)
-	http.HandleFunc("/files", getFileData)
-	http.Handle("/", fs)
+	createThumbnail("sample-30s.mp4")
+	// fs := http.FileServer(http.Dir("./client"))
+	// http.HandleFunc("/save", saveFile)
+	// http.HandleFunc("/files", getFileData)
+	// http.Handle("/", fs)
 
-	if err := http.ListenAndServe(":8000", nil); err != nil {
-		panic(err)
-	}
+	// if err := http.ListenAndServe(":8000", nil); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func enableCors(w *http.ResponseWriter) {
@@ -80,4 +84,15 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 
 	w.Header().Set("Content-Type", "application-json")
 	json.NewEncoder(w).Encode(filemeta)
+}
+
+func createThumbnail(filename string) {
+	var buffer bytes.Buffer
+	fmt.Println(fileDir + strings.Replace(filename, ".mp4", ".jpg", 1))
+	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpg
+	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+strings.Replace(filename, ".mp4", ".jpg", 1))
+	cmd.Stdout = &buffer
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
 }
