@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,26 +9,28 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 var fileDir = "./files/"
 
 type FileMeta struct {
-	Name string
-	Size int64
+	Name      string
+	Size      int64
+	Thumbnail string
 }
 
 func main() {
-	createThumbnail("sample-30s.mp4")
-	// fs := http.FileServer(http.Dir("./client"))
-	// http.HandleFunc("/save", saveFile)
-	// http.HandleFunc("/files", getFileData)
-	// http.Handle("/", fs)
+	// createThumbnail("sample-30s.mp4")
+	fs := http.FileServer(http.Dir("./client"))
+	http.HandleFunc("/save", saveFile)
+	http.HandleFunc("/files", getFileData)
+	http.Handle("/", fs)
 
-	// if err := http.ListenAndServe(":8000", nil); err != nil {
-	// 	panic(err)
-	// }
+	if err := http.ListenAndServe(":8000", nil); err != nil {
+		panic(err)
+	}
 }
 
 func enableCors(w *http.ResponseWriter) {
@@ -60,6 +62,8 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 		if _, err := io.Copy(out, file); err != nil {
 			log.Fatal(err)
 		}
+
+		createThumbnail(f.Filename)
 	}
 }
 
@@ -76,9 +80,17 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 			fmt.Println(err)
 		}
 
+		// get thumbnail, base64-encoded
+		b, err := os.ReadFile(fileDir + f.Name())
+		if err != nil {
+			fmt.Println(err)
+		}
+		thumbnail := "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
+
 		filemeta = append(filemeta, FileMeta{
-			Name: fi.Name(),
-			Size: fi.Size(),
+			Name:      fi.Name(),
+			Size:      fi.Size(),
+			Thumbnail: thumbnail,
 		})
 	}
 
@@ -87,12 +99,12 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 }
 
 func createThumbnail(filename string) {
-	var buffer bytes.Buffer
-	fmt.Println(fileDir + strings.Replace(filename, ".mp4", ".jpg", 1))
-	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpg
-	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+strings.Replace(filename, ".mp4", ".jpg", 1))
-	cmd.Stdout = &buffer
+	f := strings.Trim(filename, filepath.Ext(filename))
+	var errbuff strings.Builder
+	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpeg
+	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+f+".jpeg")
+	cmd.Stderr = &errbuff
 	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
+		fmt.Println(errbuff.String())
 	}
 }
