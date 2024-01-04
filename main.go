@@ -68,6 +68,7 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 }
 
 func getFileData(w http.ResponseWriter, h *http.Request) {
+	enableCors(&w)
 	dir, err := os.ReadDir(fileDir)
 	if err != nil {
 		log.Fatal("Cannot read file directory")
@@ -75,17 +76,22 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 
 	var filemeta []FileMeta
 	for _, f := range dir {
-		fi, err := os.Stat(fileDir + f.Name())
+		filename := fileDir + f.Name()
+		fi, err := os.Stat(filename)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		// get thumbnail, base64-encoded
-		b, err := os.ReadFile(fileDir + f.Name())
+		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
+		var thumbnail string
 		if err != nil {
-			fmt.Println(err)
+			wd, _ := os.Getwd()
+			fmt.Println(wd, "\n", err)
+			thumbnail = ""
+		} else {
+			thumbnail = "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
 		}
-		thumbnail := "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
 
 		filemeta = append(filemeta, FileMeta{
 			Name:      fi.Name(),
@@ -102,9 +108,13 @@ func createThumbnail(filename string) {
 	f := strings.Trim(filename, filepath.Ext(filename))
 	var errbuff strings.Builder
 	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpeg
-	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+f+".jpeg")
+	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+getThumbnailPathFromFilename(f))
 	cmd.Stderr = &errbuff
 	if err := cmd.Run(); err != nil {
 		fmt.Println(errbuff.String())
 	}
+}
+
+func getThumbnailPathFromFilename(filename string) string {
+	return strings.Trim(filename, filepath.Ext(filename)) + ".jpeg"
 }

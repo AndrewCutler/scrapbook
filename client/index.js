@@ -1,5 +1,16 @@
 window.onload = function () {
+	let thumbnails = [];
 	const MAX_FILES = 4;
+
+	async function getThumbnails() {
+		const response = await fetch('http://10.0.0.73:8000/files').catch(
+			console.error,
+		);
+        console.log(await response.json())
+        // thumbnails = response;
+	}
+
+	(async () => await getThumbnails())();
 
 	const previews = document.querySelector('#previews');
 
