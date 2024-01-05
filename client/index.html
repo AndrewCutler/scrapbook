@@ -14,17 +14,21 @@
 	</head>
 	<body>
 		<h2>Choose videos to upload</h2>
-		<div id="input-container" style="display: flex; flex-direction: column">
-			<input
-				type="file"
-				name="upload"
-				id="upload"
-				multiple
-				capture
-				accept="video/*"
-			/>
-			<!-- only for mp4 -->
-			<!-- <input
+		<div>
+			<div
+				id="input-container"
+				style="display: flex; flex-direction: column"
+			>
+				<input
+					type="file"
+					name="upload"
+					id="upload"
+					multiple
+					capture
+					accept="video/*"
+				/>
+				<!-- only for mp4 -->
+				<!-- <input
 				type="file"
 				name="upload"
 				id="upload"
@@ -32,9 +36,13 @@
 				capture
 				accept=".mp4"
 			/> -->
+			</div>
+			<ul id="previews" style="display: inline-block"></ul>
+			<br />
+			<button type="button" id="submit">Upload</button>
 		</div>
-		<ul id="previews" style="display: inline-block"></ul>
-		<br />
-		<button type="button" id="submit">Upload</button>
+        <div id="files">
+
+        </div>
 	</body>
 </html>

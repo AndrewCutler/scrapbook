@@ -1,13 +1,29 @@
 window.onload = function () {
-	let thumbnails = [];
 	const MAX_FILES = 4;
+
+	function renderFileData(thumbnails) {
+		for (const curr of thumbnails) {
+			const x = document.createElement('div');
+			x.innerText = curr.Name;
+			const img = document.createElement('img');
+			img.src = curr.Thumbnail;
+            img.height = 200;
+            img.width = 200;
+			x.appendChild(img);
+			document.querySelector('#files').appendChild(x);
+		}
+	}
 
 	async function getThumbnails() {
 		const response = await fetch('http://10.0.0.73:8000/files').catch(
 			console.error,
 		);
-        console.log(await response.json())
-        // thumbnails = response;
+		try {
+			const thumbnails = await response.json();
+			renderFileData(thumbnails);
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	(async () => await getThumbnails())();
