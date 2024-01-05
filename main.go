@@ -77,13 +77,19 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 	var filemeta []FileMeta
 	for _, f := range dir {
 		filename := fileDir + f.Name()
-		fi, err := os.Stat(filename)
+		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		// get thumbnail, base64-encoded
-		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
+		if strings.HasSuffix(f.Name(), ".mp4") || strings.HasSuffix(f.Name(), ".webm") /* || etc. */ {
+			continue
+		}
+
+		fi, err := os.Stat(filename)
+		if err != nil {
+			fmt.Println(err)
+		}
 		var thumbnail string
 		if err != nil {
 			wd, _ := os.Getwd()
