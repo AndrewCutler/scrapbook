@@ -28,7 +28,7 @@ func main() {
 	// createThumbnail("sample-30s.mp4")
 	fs := http.FileServer(http.Dir("./client"))
 	http.HandleFunc("/save", saveFile)
-	http.HandleFunc("/files", getFileData)
+	http.HandleFunc("/files/", getFileData)
 	http.Handle("/", fs)
 
 	if err := http.ListenAndServe(":8000", nil); err != nil {
@@ -70,8 +70,23 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 	}
 }
 
+func getVideo(w http.ResponseWriter, h *http.Request) {
+	enableCors(&w)
+	fmt.Println("get video")
+}
+
 func getFileData(w http.ResponseWriter, h *http.Request) {
 	enableCors(&w)
+
+	// todo: separate functions for if there is a route param or not
+	name := strings.TrimPrefix(h.URL.Path, "/files/")
+	fmt.Println(h.URL.Path, name)
+	if name != "" {
+		fmt.Println(h.URL.Path, name)
+		// get single file
+		return
+	}
+
 	dir, err := os.ReadDir(fileDir)
 	if err != nil {
 		log.Fatal("Cannot read file directory")
