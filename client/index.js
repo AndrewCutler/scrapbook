@@ -3,14 +3,23 @@ window.onload = function () {
 
 	function renderFileData(thumbnails) {
 		for (const curr of thumbnails) {
-			const x = document.createElement('div');
-			x.innerText = curr.Name;
+			const fileDiv = document.createElement('div');
+			fileDiv.style.display = 'flex';
+			fileDiv.style.flexDirection = 'column';
+            
+			const filenameDiv = document.createElement('div');
+			filenameDiv.innerText = curr.Name;
+			fileDiv.appendChild(filenameDiv);
+
+			const imgDiv = document.createElement('div');
 			const img = document.createElement('img');
 			img.src = curr.Thumbnail;
-            img.height = 200;
-            img.width = 200;
-			x.appendChild(img);
-			document.querySelector('#files').appendChild(x);
+			img.height = 200;
+			img.width = 200;
+			imgDiv.appendChild(img);
+			fileDiv.appendChild(imgDiv);
+
+			document.querySelector('#files').appendChild(fileDiv);
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
 	"io"
 	"log"
 	"net/http"
@@ -19,6 +20,8 @@ type FileMeta struct {
 	Name      string
 	Size      int64
 	Thumbnail string
+	Height    int
+	Width     int
 }
 
 func main() {
@@ -82,7 +85,7 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 			fmt.Println(err)
 		}
 
-		if strings.HasSuffix(f.Name(), ".mp4") || strings.HasSuffix(f.Name(), ".webm") /* || etc. */ {
+		if !strings.HasSuffix(f.Name(), ".mp4") && !strings.HasSuffix(f.Name(), ".webm") /* || etc. */ {
 			continue
 		}
 
@@ -99,10 +102,28 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 			thumbnail = "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
 		}
 
+		// get image dimensions
+		height := 200
+		width := 200
+		reader, err := os.Open("." + getThumbnailPathFromFilename(filename))
+		defer reader.Close()
+		if err == nil {
+			im, _, err := image.DecodeConfig(reader)
+			height = im.Height
+			width = im.Width
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			fmt.Println(err)
+		}
+
 		filemeta = append(filemeta, FileMeta{
 			Name:      fi.Name(),
 			Size:      fi.Size(),
 			Thumbnail: thumbnail,
+			Height:    height,
+			Width:     width,
 		})
 	}
 
