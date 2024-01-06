@@ -1,12 +1,18 @@
 window.onload = function () {
 	const MAX_FILES = 4;
 
+	async function downloadVideo(filename) {
+		const response = await fetch(
+			`http://10.0.0.73:8000/files/${filename}`,
+		).catch(console.error);
+	}
+
 	function renderFileData(thumbnails) {
 		for (const curr of thumbnails) {
 			const fileDiv = document.createElement('div');
 			fileDiv.style.display = 'flex';
 			fileDiv.style.flexDirection = 'column';
-            
+
 			const filenameDiv = document.createElement('div');
 			filenameDiv.innerText = curr.Name;
 			fileDiv.appendChild(filenameDiv);
@@ -18,6 +24,15 @@ window.onload = function () {
 			img.width = 200;
 			imgDiv.appendChild(img);
 			fileDiv.appendChild(imgDiv);
+
+			const downloadDiv = document.createElement('div');
+			const downloadButton = document.createElement('button');
+			downloadButton.type = 'button';
+			downloadButton.innerText = 'Download video';
+            downloadButton.onclick = downloadVideo(curr.Name);
+
+			downloadDiv.appendChild(downloadButton);
+			fileDiv.appendChild(downloadDiv);
 
 			document.querySelector('#files').appendChild(fileDiv);
 		}
