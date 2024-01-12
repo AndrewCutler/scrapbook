@@ -29,7 +29,7 @@ window.onload = function () {
 			const downloadButton = document.createElement('button');
 			downloadButton.type = 'button';
 			downloadButton.innerText = 'Download video';
-            downloadButton.onclick = downloadVideo(curr.Name);
+			downloadButton.onclick = downloadVideo(curr.Name);
 
 			downloadDiv.appendChild(downloadButton);
 			fileDiv.appendChild(downloadDiv);

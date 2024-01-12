@@ -12,6 +12,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var fileDir = "./files/"
@@ -25,26 +29,40 @@ type FileMeta struct {
 }
 
 func main() {
-	// createThumbnail("sample-30s.mp4")
+	r := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./client"))
-	http.HandleFunc("/save", saveFile)
-	http.HandleFunc("/files/", getFileData)
-	http.Handle("/", fs)
+	r.PathPrefix("").Handler(fs)
+	r.HandleFunc("/save", saveFileHandler)
+	// http.HandleFunc("/files/", getFileDataHandler)
+	r.HandleFunc("/files/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("files")
+	})
 
-	if err := http.ListenAndServe(":8000", nil); err != nil {
+	handler := cors.Default().Handler(r)
+	srv := &http.Server{
+		Handler: handler,
+		// Addr:    "10.0.0.73:8000",
+		Addr:         "localhost:8000",
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+
+	http.Handle("/", r)
+	if err := srv.ListenAndServe(); err != nil {
 		panic(err)
 	}
 }
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-}
+func saveFileHandler(w http.ResponseWriter, r *http.Request) {
+	switch origin := r.Header.Get("Origin"); origin {
+	case "http://localhost":
+		(w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
+		fmt.Println("http://localhost")
+	}
+	// enableCors(&w, r)
+	r.ParseMultipartForm(200)
 
-func saveFile(w http.ResponseWriter, h *http.Request) {
-	enableCors(&w)
-	h.ParseMultipartForm(200)
-
-	form := h.MultipartForm
+	form := r.MultipartForm
 	files := form.File["files"]
 	if files == nil {
 		log.Fatal("No files received")
@@ -70,23 +88,29 @@ func saveFile(w http.ResponseWriter, h *http.Request) {
 	}
 }
 
-func getVideo(w http.ResponseWriter, h *http.Request) {
-	enableCors(&w)
-	fmt.Println("get video")
-}
+func getFileDataHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get")
 
-func getFileData(w http.ResponseWriter, h *http.Request) {
-	enableCors(&w)
+	switch origin := r.Header.Get("Origin"); origin {
+	case "http://localhost":
+		(w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
+		fmt.Println("http://localhost")
 
-	// todo: separate functions for if there is a route param or not
-	name := strings.TrimPrefix(h.URL.Path, "/files/")
-	fmt.Println(h.URL.Path, name)
+	case "http://10.0.0.73":
+		(w).Header().Set("Access-Control-Allow-Origin", "http://10.0.0.73")
+		fmt.Println("http://10.0.0.73")
+	}
+	(w).Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+
+	// enableCors(&w, r)
+
+	name := strings.TrimPrefix(r.URL.Path, "/files/")
 	if name != "" {
-		fmt.Println(h.URL.Path, name)
-		// get single file
+		getFile(name, w)
 		return
 	}
 
+	// buildFileList(w)
 	dir, err := os.ReadDir(fileDir)
 	if err != nil {
 		log.Fatal("Cannot read file directory")
@@ -143,7 +167,92 @@ func getFileData(w http.ResponseWriter, h *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application-json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(filemeta)
+}
+
+func enableCors(w *http.ResponseWriter, r *http.Request) {
+	switch origin := r.Header.Get("Origin"); origin {
+	case "http://localhost":
+		(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
+		fmt.Println("http://localhost")
+	}
+	// (*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+func buildFileList(w http.ResponseWriter) {
+	dir, err := os.ReadDir(fileDir)
+	if err != nil {
+		log.Fatal("Cannot read file directory")
+	}
+
+	var filemeta []FileMeta
+	for _, f := range dir {
+		filename := fileDir + f.Name()
+		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if !strings.HasSuffix(f.Name(), ".mp4") && !strings.HasSuffix(f.Name(), ".webm") /* || etc. */ {
+			continue
+		}
+
+		fi, err := os.Stat(filename)
+		if err != nil {
+			fmt.Println(err)
+		}
+		var thumbnail string
+		if err != nil {
+			wd, _ := os.Getwd()
+			fmt.Println(wd, "\n", err)
+			thumbnail = ""
+		} else {
+			thumbnail = "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
+		}
+
+		// get image dimensions
+		height := 200
+		width := 200
+		reader, err := os.Open("." + getThumbnailPathFromFilename(filename))
+		defer reader.Close()
+		if err == nil {
+			im, _, err := image.DecodeConfig(reader)
+			height = im.Height
+			width = im.Width
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			fmt.Println(err)
+		}
+
+		filemeta = append(filemeta, FileMeta{
+			Name:      fi.Name(),
+			Size:      fi.Size(),
+			Thumbnail: thumbnail,
+			Height:    height,
+			Width:     width,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application-json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	json.NewEncoder(w).Encode(filemeta)
+
+}
+
+func getFile(name string, w http.ResponseWriter) {
+	b, err := os.ReadFile(fileDir + name)
+	if err != nil {
+		fmt.Println(err)
+	}
+	w.Write(b)
+}
+
+func getVideo(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w, r)
+	fmt.Println("get video")
 }
 
 func createThumbnail(filename string) {
