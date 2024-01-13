@@ -27,22 +27,55 @@ type FileMeta struct {
 	Height    int
 	Width     int
 }
+type spaHandler struct {
+	staticPath string
+	indexPath  string
+}
+
+func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Join internally call path.Clean to prevent directory traversal
+	path := filepath.Join(h.staticPath, r.URL.Path)
+
+	// check whether a file exists or is a directory at the given path
+	fi, err := os.Stat(path)
+	if os.IsNotExist(err) || fi.IsDir() {
+		// file does not exist or path is a directory, serve index.html
+		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
+		return
+	}
+
+	if err != nil {
+		// if we got an error (that wasn't that the file doesn't exist) stating the
+		// file, return a 500 internal server error and stop
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// otherwise, use http.FileServer to serve the static file
+	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
+}
 
 func main() {
 	r := mux.NewRouter()
-	fs := http.FileServer(http.Dir("./client"))
-	r.PathPrefix("").Handler(fs)
+	// fs := http.FileServer(http.Dir("./client"))
+	// r.PathPrefix("").Handler(fs)
 	r.HandleFunc("/save", saveFileHandler)
 	// http.HandleFunc("/files/", getFileDataHandler)
-	r.HandleFunc("/files/", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			return
+		}
 		fmt.Println("files")
 	})
 
-	handler := cors.Default().Handler(r)
+	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
+	r.PathPrefix("/").Handler(spa)
+	handler := cors.Default().Handler(spa)
 	srv := &http.Server{
 		Handler: handler,
-		// Addr:    "10.0.0.73:8000",
-		Addr:         "localhost:8000",
+		Addr:    "10.0.0.73:8000",
+		// Addr:         "localhost:8000",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
@@ -177,7 +210,7 @@ func enableCors(w *http.ResponseWriter, r *http.Request) {
 		(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
 		fmt.Println("http://localhost")
 	}
-	// (*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func buildFileList(w http.ResponseWriter) {
