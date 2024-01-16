@@ -2,8 +2,17 @@ window.onload = function () {
 	const MAX_FILES = 4;
 
 	async function downloadVideo(filename) {
+		// const response = await fetch('http://10.0.0.73:8000/api/files').catch(
+		// 	console.error,
+		// );
+		// try {
+		// 	const thumbnails = await response.json();
+		// 	console.log(thumbnails);
+		// } catch (e) {
+		// 	console.error(e);
+		// }
 		const response = await fetch(
-			`http://10.0.0.73:8000/files/${filename}`,
+			`http://10.0.0.73:8000/api/files/${filename}`,
 		).catch(console.error);
 	}
 
@@ -29,7 +38,10 @@ window.onload = function () {
 			const downloadButton = document.createElement('button');
 			downloadButton.type = 'button';
 			downloadButton.innerText = 'Download video';
-			downloadButton.onclick = downloadVideo(curr.Name);
+			downloadButton.onclick = function () {
+				downloadVideo(curr.Name);
+				console.log('download');
+			};
 
 			downloadDiv.appendChild(downloadButton);
 			fileDiv.appendChild(downloadDiv);
@@ -39,7 +51,7 @@ window.onload = function () {
 	}
 
 	async function getThumbnails() {
-		const response = await fetch('http://10.0.0.73:8000/files').catch(
+		const response = await fetch('http://10.0.0.73:8000/api/files').catch(
 			console.error,
 		);
 		try {
@@ -65,7 +77,7 @@ window.onload = function () {
 			formData.append('files', file);
 		}
 
-		await fetch('http://10.0.0.73:8000/save', {
+		await fetch('http://10.0.0.73:8000/api/save', {
 			method: 'POST',
 			body: formData,
 		}).catch(console.error);

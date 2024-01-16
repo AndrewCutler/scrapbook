@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 var fileDir = "./files/"
@@ -27,6 +26,7 @@ type FileMeta struct {
 	Height    int
 	Width     int
 }
+
 type spaHandler struct {
 	staticPath string
 	indexPath  string
@@ -34,6 +34,10 @@ type spaHandler struct {
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Join internally call path.Clean to prevent directory traversal
+	if strings.HasPrefix(r.URL.Path, "/api") {
+		return
+	}
+
 	path := filepath.Join(h.staticPath, r.URL.Path)
 
 	// check whether a file exists or is a directory at the given path
@@ -57,42 +61,25 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter()
-	// fs := http.FileServer(http.Dir("./client"))
-	// r.PathPrefix("").Handler(fs)
-	r.HandleFunc("/save", saveFileHandler)
-	// http.HandleFunc("/files/", getFileDataHandler)
-	r.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		if r.Method == http.MethodOptions {
-			return
-		}
-		fmt.Println("files")
-	})
+	r.HandleFunc("/test/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	}).Methods("GET")
+	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
+	r.HandleFunc("/api/files/{filename}", getFileDataHandler).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
-	handler := cors.Default().Handler(spa)
 	srv := &http.Server{
-		Handler: handler,
-		Addr:    "10.0.0.73:8000",
-		// Addr:         "localhost:8000",
+		Handler:      r,
+		Addr:         "10.0.0.73:8000",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
 
-	http.Handle("/", r)
-	if err := srv.ListenAndServe(); err != nil {
-		panic(err)
-	}
+	log.Fatal(srv.ListenAndServe())
 }
 
 func saveFileHandler(w http.ResponseWriter, r *http.Request) {
-	switch origin := r.Header.Get("Origin"); origin {
-	case "http://localhost":
-		(w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
-		fmt.Println("http://localhost")
-	}
-	// enableCors(&w, r)
 	r.ParseMultipartForm(200)
 
 	form := r.MultipartForm
@@ -102,7 +89,6 @@ func saveFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, f := range files {
-		fmt.Print(f.Filename)
 		file, err := f.Open()
 		if err != nil {
 			log.Fatal(err)
@@ -122,22 +108,9 @@ func saveFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFileDataHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get")
-
-	switch origin := r.Header.Get("Origin"); origin {
-	case "http://localhost":
-		(w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
-		fmt.Println("http://localhost")
-
-	case "http://10.0.0.73":
-		(w).Header().Set("Access-Control-Allow-Origin", "http://10.0.0.73")
-		fmt.Println("http://10.0.0.73")
-	}
-	(w).Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-
-	// enableCors(&w, r)
-
-	name := strings.TrimPrefix(r.URL.Path, "/files/")
+	vars := mux.Vars(r)
+	name := vars["filename"]
+	fmt.Println("name :", name)
 	if name != "" {
 		getFile(name, w)
 		return
@@ -200,17 +173,9 @@ func getFileDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application-json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(filemeta)
-}
-
-func enableCors(w *http.ResponseWriter, r *http.Request) {
-	switch origin := r.Header.Get("Origin"); origin {
-	case "http://localhost":
-		(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost")
-		fmt.Println("http://localhost")
-	}
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	// json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
 
 func buildFileList(w http.ResponseWriter) {
@@ -284,7 +249,6 @@ func getFile(name string, w http.ResponseWriter) {
 }
 
 func getVideo(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
 	fmt.Println("get video")
 }
 
