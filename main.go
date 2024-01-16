@@ -65,7 +65,8 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	}).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
-	r.HandleFunc("/api/files/{filename}", getFileDataHandler).Methods("GET")
+	r.HandleFunc("/api/files", buildFileList).Methods("GET")
+	r.HandleFunc("/api/files/{filename}", getFile2).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
@@ -108,77 +109,20 @@ func saveFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFileDataHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("url: ", r.URL)
 	vars := mux.Vars(r)
 	name := vars["filename"]
-	fmt.Println("name :", name)
-	if name != "" {
+	fmt.Println("name:", name)
+
+	if name != "" && name != "0" {
 		getFile(name, w)
 		return
 	}
 
-	// buildFileList(w)
-	dir, err := os.ReadDir(fileDir)
-	if err != nil {
-		log.Fatal("Cannot read file directory")
-	}
-
-	var filemeta []FileMeta
-	for _, f := range dir {
-		filename := fileDir + f.Name()
-		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		if !strings.HasSuffix(f.Name(), ".mp4") && !strings.HasSuffix(f.Name(), ".webm") /* || etc. */ {
-			continue
-		}
-
-		fi, err := os.Stat(filename)
-		if err != nil {
-			fmt.Println(err)
-		}
-		var thumbnail string
-		if err != nil {
-			wd, _ := os.Getwd()
-			fmt.Println(wd, "\n", err)
-			thumbnail = ""
-		} else {
-			thumbnail = "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b)
-		}
-
-		// get image dimensions
-		height := 200
-		width := 200
-		reader, err := os.Open("." + getThumbnailPathFromFilename(filename))
-		defer reader.Close()
-		if err == nil {
-			im, _, err := image.DecodeConfig(reader)
-			height = im.Height
-			width = im.Width
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			fmt.Println(err)
-		}
-
-		filemeta = append(filemeta, FileMeta{
-			Name:      fi.Name(),
-			Size:      fi.Size(),
-			Thumbnail: thumbnail,
-			Height:    height,
-			Width:     width,
-		})
-	}
-
-	w.Header().Set("Content-Type", "application-json")
-	// w.Header().Set("Access-Control-Allow-Origin", "*")
-	json.NewEncoder(w).Encode(filemeta)
-	// json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	buildFileList(w, r)
 }
 
-func buildFileList(w http.ResponseWriter) {
+func buildFileList(w http.ResponseWriter, r *http.Request) {
 	dir, err := os.ReadDir(fileDir)
 	if err != nil {
 		log.Fatal("Cannot read file directory")
@@ -246,6 +190,17 @@ func getFile(name string, w http.ResponseWriter) {
 		fmt.Println(err)
 	}
 	w.Write(b)
+}
+
+func getFile2(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("url: ", r.URL)
+	vars := mux.Vars(r)
+	name := vars["filename"]
+	fmt.Println("name:", name)
+
+	if name != "" {
+		getFile(name, w)
+	}
 }
 
 func getVideo(w http.ResponseWriter, r *http.Request) {
