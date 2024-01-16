@@ -65,8 +65,8 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	}).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
-	r.HandleFunc("/api/files", buildFileList).Methods("GET")
-	r.HandleFunc("/api/files/{filename}", getFile2).Methods("GET")
+	r.HandleFunc("/api/files", buildFileListHandler).Methods("GET")
+	r.HandleFunc("/api/files/{filename}", getFileHandler).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
@@ -108,21 +108,7 @@ func saveFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getFileDataHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("url: ", r.URL)
-	vars := mux.Vars(r)
-	name := vars["filename"]
-	fmt.Println("name:", name)
-
-	if name != "" && name != "0" {
-		getFile(name, w)
-		return
-	}
-
-	buildFileList(w, r)
-}
-
-func buildFileList(w http.ResponseWriter, r *http.Request) {
+func buildFileListHandler(w http.ResponseWriter, r *http.Request) {
 	dir, err := os.ReadDir(fileDir)
 	if err != nil {
 		log.Fatal("Cannot read file directory")
@@ -184,23 +170,20 @@ func buildFileList(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getFile(name string, w http.ResponseWriter) {
+func getFileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["filename"]
+
+	if name == "" {
+		fmt.Println("empty name received")
+		return
+	}
 	b, err := os.ReadFile(fileDir + name)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	w.Write(b)
-}
-
-func getFile2(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("url: ", r.URL)
-	vars := mux.Vars(r)
-	name := vars["filename"]
-	fmt.Println("name:", name)
-
-	if name != "" {
-		getFile(name, w)
-	}
 }
 
 func getVideo(w http.ResponseWriter, r *http.Request) {
