@@ -9,8 +9,8 @@
 			@import 'https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css';
 
 			body {
-                width: 100vw;
-                height: 100vh;
+				width: 100vw;
+				height: 100vh;
 				background: #222;
 				color: #b5b5b5;
 			}
@@ -25,11 +25,13 @@
 			}
 
 			.files-container {
-				display: grid;
+				display: none;
 				background: #555;
 				grid-template-columns: repeat(3, 1fr);
 				gap: 15px;
 				padding: 15px;
+				margin: 6px;
+				width: calc(100% - 15px - 12px);
 
 				> div {
 					background: #333;
@@ -67,38 +69,38 @@
 	</head>
 	<body>
 		<div class="tabs">
-			<ul>
-				<li class="is-active"><a>Pictures</a></li>
-				<li><a>Music</a></li>
-				<li><a>Videos</a></li>
-				<li><a>Documents</a></li>
+			<ul class="tab-headers">
+				<li id="upload-header" class="is-active"><a>Upload</a></li>
+				<li id="download-header"><a>Download</a></li>
 			</ul>
 		</div>
-		<h2>Choose videos to upload</h2>
-		<div class="upload-container">
-			<div id="input-container">
-				<input
-					type="file"
-					name="upload"
-					id="upload"
-					multiple
-					capture
-					accept="video/*"
-				/>
-				<!-- only for mp4 -->
-				<!-- <input
-				type="file"
-				name="upload"
-				id="upload"
-				multiple
-				capture
-				accept=".mp4"
-			/> -->
+		<div id="upload-tab">
+			<h2>Choose videos to upload</h2>
+			<div class="upload-container">
+				<div id="input-container">
+					<input
+						type="file"
+						name="upload"
+						id="upload"
+						multiple
+						capture
+						accept="video/*"
+					/>
+					<!-- only for mp4 -->
+					<!-- <input
+                    type="file"
+                    name="upload"
+                    id="upload"
+                    multiple
+                    capture
+                    accept=".mp4"
+                    /> -->
+				</div>
+				<ul id="previews" style="display: inline-block"></ul>
+				<br />
+				<button type="button" id="submit" class="button">Upload</button>
 			</div>
-			<ul id="previews" style="display: inline-block"></ul>
-			<br />
-			<button type="button" id="submit">Upload</button>
 		</div>
-		<div id="files" class="files-container"></div>
+		<div id="files-tab" class="files-container"></div>
 	</body>
 </html>

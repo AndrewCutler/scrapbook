@@ -34,6 +34,7 @@ window.onload = function () {
 			const downloadDiv = document.createElement('div');
 			const downloadButton = document.createElement('button');
 			downloadButton.type = 'button';
+			downloadButton.classList.add('button');
 			downloadButton.innerText = 'Download video';
 			downloadButton.onclick = function () {
 				downloadVideo(curr.Name);
@@ -42,7 +43,7 @@ window.onload = function () {
 			downloadDiv.appendChild(downloadButton);
 			fileDiv.appendChild(downloadDiv);
 
-			document.querySelector('#files').appendChild(fileDiv);
+			document.querySelector('#files-tab').appendChild(fileDiv);
 		}
 	}
 
@@ -64,6 +65,7 @@ window.onload = function () {
 
 	const uploadButton = document.querySelector('#submit');
 	uploadButton.style.display = 'none';
+	uploadButton.classList.add('button');
 	uploadButton.addEventListener('click', async function () {
 		// revoke object urls
 		const formData = new FormData();
@@ -101,7 +103,8 @@ window.onload = function () {
 		const removeButton = document.createElement('a');
 		removeButton.textContent = 'Remove';
 		removeButton.style.cursor = 'pointer';
-		removeButton.style.color = '#dd4';
+		removeButton.style.marginTop = '2px';
+		removeButton.classList.add('button');
 		removeButton.addEventListener('click', function () {
 			console.log('delete ', index);
 		});
@@ -135,4 +138,28 @@ window.onload = function () {
 	}
 
 	input.addEventListener('change', uploadFile);
+
+	function clearActiveHeaders() {
+		headers = document.querySelectorAll('.tab-headers li');
+		headers.forEach((header) => header.classList.remove('is-active'));
+	}
+
+	function setActiveHeader(header) {
+		clearActiveHeaders();
+		header.classList.add('is-active');
+	}
+
+	const uploadHeader = document.querySelector('#upload-header');
+	uploadHeader.addEventListener('click', function () {
+		setActiveHeader(uploadHeader);
+		document.querySelector('#files-tab').style.display = 'none';
+		document.querySelector('#upload-tab').style.display = 'block';
+	});
+
+	const downloadHeader = document.querySelector('#download-header');
+	downloadHeader.addEventListener('click', function () {
+		setActiveHeader(downloadHeader);
+		document.querySelector('#files-tab').style.display = 'grid';
+		document.querySelector('#upload-tab').style.display = 'none';
+	});
 };
