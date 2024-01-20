@@ -28,8 +28,6 @@ window.onload = function () {
 			const img = document.createElement('img');
 			img.classList.add('thumbnail');
 			img.src = curr.Thumbnail;
-			// img.height = 200;
-			// img.width = 200;
 			imgDiv.appendChild(img);
 			fileDiv.appendChild(imgDiv);
 
@@ -122,7 +120,8 @@ window.onload = function () {
 	}
 
 	const input = document.querySelector('#upload');
-	input.addEventListener('change', function () {
+
+	function uploadFile() {
 		uploadButton.style.display = input.files.length > 0 ? 'block' : 'none';
 
 		if (input.files.length > MAX_FILES) {
@@ -141,5 +140,7 @@ window.onload = function () {
 			file = input.files[i];
 			createPreviewElement(file, i);
 		}
-	});
+	}
+    
+	input.addEventListener('change', uploadFile);
 };
