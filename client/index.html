@@ -6,9 +6,22 @@
 		<title>Scrap Book</title>
 		<script src="./index.js"></script>
 		<style>
+			@import 'https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css';
+
 			body {
-				background: #333;
+                width: 100vw;
+                height: 100vh;
+				background: #222;
 				color: #b5b5b5;
+			}
+
+			.upload-container {
+				margin: 6px;
+			}
+
+			#input-container {
+				display: flex;
+				flex-direction: column;
 			}
 
 			.files-container {
@@ -23,7 +36,7 @@
 					display: flex;
 					flex-direction: column;
 					align-items: center;
-                    padding: 6px;
+					padding: 6px;
 				}
 			}
 
@@ -31,15 +44,39 @@
 				height: 150px;
 				width: 150px;
 			}
+
+			.preview-item {
+				display: flex;
+				flex-direction: column;
+				padding: 6px;
+				margin-bottom: 8px;
+				border: 1px solid #b5b5b5;
+				border-radius: 5px;
+			}
+
+			.video-container {
+				display: flex;
+				flex-direction: column;
+			}
+
+			video {
+				height: 200px;
+				width: 240px;
+			}
 		</style>
 	</head>
 	<body>
+		<div class="tabs">
+			<ul>
+				<li class="is-active"><a>Pictures</a></li>
+				<li><a>Music</a></li>
+				<li><a>Videos</a></li>
+				<li><a>Documents</a></li>
+			</ul>
+		</div>
 		<h2>Choose videos to upload</h2>
-		<div>
-			<div
-				id="input-container"
-				style="display: flex; flex-direction: column"
-			>
+		<div class="upload-container">
+			<div id="input-container">
 				<input
 					type="file"
 					name="upload"

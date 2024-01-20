@@ -83,12 +83,7 @@ window.onload = function () {
 		const { name, size } = file;
 
 		const previewListItem = document.createElement('li');
-		previewListItem.style.display = 'flex';
-		previewListItem.style.flexDirection = 'column';
-		previewListItem.style.padding = '6px';
-		previewListItem.style.marginBottom = '8px';
-		previewListItem.style.border = '1px solid #b5b5b5';
-		previewListItem.style.borderRadius = '5px';
+		previewListItem.classList.add('preview-item');
 		previewListItem.id = `preview-${index}`;
 
 		const previewDescription = document.createElement('span');
@@ -96,12 +91,9 @@ window.onload = function () {
 		previewListItem.appendChild(previewDescription);
 
 		const videoContainer = document.createElement('div');
-		videoContainer.style.display = 'flex';
-		videoContainer.style.flexDirection = 'column';
+		videoContainer.classList.add('video-container');
 		const video = document.createElement('video');
 		video.src = URL.createObjectURL(file);
-		video.height = 200;
-		video.width = 240;
 		video.controls = true;
 		video.muted = true;
 		videoContainer.appendChild(video);
@@ -141,6 +133,6 @@ window.onload = function () {
 			createPreviewElement(file, i);
 		}
 	}
-    
+
 	input.addEventListener('change', uploadFile);
 };
