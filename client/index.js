@@ -2,18 +2,18 @@ window.onload = function () {
 	const MAX_FILES = 4;
 
 	async function downloadVideo(filename) {
-		// const response = await fetch('http://10.0.0.73:8000/api/files').catch(
-		// 	console.error,
-		// );
-		// try {
-		// 	const thumbnails = await response.json();
-		// 	console.log(thumbnails);
-		// } catch (e) {
-		// 	console.error(e);
-		// }
 		const response = await fetch(
 			`http://10.0.0.73:8000/api/files/${filename}`,
 		).catch(console.error);
+		try {
+			const data = await response.blob();
+			var a = document.createElement('a');
+			a.href = window.URL.createObjectURL(data);
+			a.download = filename;
+			a.click();
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	function renderFileData(thumbnails) {
