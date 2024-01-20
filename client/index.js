@@ -7,7 +7,7 @@ window.onload = function () {
 		).catch(console.error);
 		try {
 			const data = await response.blob();
-			var a = document.createElement('a');
+			const a = document.createElement('a');
 			a.href = window.URL.createObjectURL(data);
 			a.download = filename;
 			a.click();
@@ -19,8 +19,6 @@ window.onload = function () {
 	function renderFileData(thumbnails) {
 		for (const curr of thumbnails) {
 			const fileDiv = document.createElement('div');
-			fileDiv.style.display = 'flex';
-			fileDiv.style.flexDirection = 'column';
 
 			const filenameDiv = document.createElement('div');
 			filenameDiv.innerText = curr.Name;
@@ -28,9 +26,10 @@ window.onload = function () {
 
 			const imgDiv = document.createElement('div');
 			const img = document.createElement('img');
+			img.classList.add('thumbnail');
 			img.src = curr.Thumbnail;
-			img.height = 200;
-			img.width = 200;
+			// img.height = 200;
+			// img.width = 200;
 			imgDiv.appendChild(img);
 			fileDiv.appendChild(imgDiv);
 
@@ -40,7 +39,6 @@ window.onload = function () {
 			downloadButton.innerText = 'Download video';
 			downloadButton.onclick = function () {
 				downloadVideo(curr.Name);
-				console.log('download');
 			};
 
 			downloadDiv.appendChild(downloadButton);
