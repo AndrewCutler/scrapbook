@@ -1,10 +1,11 @@
 window.onload = function () {
+	const BASEURL = 'http://10.0.0.73:8000/api';
 	const MAX_FILES = 4;
 
 	async function downloadVideo(filename) {
-		const response = await fetch(
-			`http://10.0.0.73:8000/api/files/${filename}`,
-		).catch(console.error);
+		const response = await fetch(`${BASEURL}/files/${filename}`).catch(
+			console.error,
+		);
 		try {
 			const data = await response.blob();
 			const a = document.createElement('a');
@@ -48,9 +49,7 @@ window.onload = function () {
 	}
 
 	async function getThumbnails() {
-		const response = await fetch('http://10.0.0.73:8000/api/files').catch(
-			console.error,
-		);
+		const response = await fetch(`${BASEURL}/files`).catch(console.error);
 		try {
 			const thumbnails = await response.json();
 			renderFileData(thumbnails);
@@ -75,7 +74,7 @@ window.onload = function () {
 			formData.append('files', file);
 		}
 
-		await fetch('http://10.0.0.73:8000/api/save', {
+		await fetch(`${BASEURL}/save`, {
 			method: 'POST',
 			body: formData,
 		}).catch(console.error);
@@ -162,4 +161,8 @@ window.onload = function () {
 		document.querySelector('#files-tab').style.display = 'grid';
 		document.querySelector('#upload-tab').style.display = 'none';
 	});
+
+	fetch('http://10.0.0.73:8000/api/test')
+		.then(console.log)
+		.catch(console.error);
 };

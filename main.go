@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -61,12 +63,10 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/test/", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	}).Methods("GET")
+	r.HandleFunc("/api/test", useBasicAuth(getTestFileHandler)).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
-	r.HandleFunc("/api/files", buildFileListHandler).Methods("GET")
-	r.HandleFunc("/api/files/{filename}", getFileHandler).Methods("GET")
+	r.HandleFunc("/api/files", useBasicAuth(buildFileListHandler)).Methods("GET")
+	r.HandleFunc("/api/files/{filename}", useBasicAuth(getFileHandler)).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
@@ -78,6 +78,15 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
+}
+
+func getTestFileHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := os.ReadFile("./client/test.js")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	w.Write(b)
 }
 
 func saveFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -203,4 +212,27 @@ func createThumbnail(filename string) {
 
 func getThumbnailPathFromFilename(filename string) string {
 	return strings.Trim(filename, filepath.Ext(filename)) + ".jpeg"
+}
+
+func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, pw, ok := r.BasicAuth()
+		if ok {
+			usernameHash := sha256.Sum256([]byte(username))
+			passwordHash := sha256.Sum256([]byte(pw))
+			expectedUsernameHash := sha256.Sum256([]byte("username"))
+			expectedPasswordHash := sha256.Sum256([]byte("password"))
+
+			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
+			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
+
+			if usernameMatch && passwordMatch {
+				next.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	})
 }
