@@ -55,9 +55,9 @@ function createPreviewElement(file, index) {
     previews.appendChild(previewListItem);
 }
 
-export function uploadFile(uploadButton, input) {
+export function uploadFile(input) {
 	return function () {
-		console.log(uploadButton);
+        const uploadButton = document.querySelector('#submit');
 		uploadButton.style.display = input.files.length > 0 ? 'block' : 'none';
 
 		if (input.files.length > MAX_FILES) {
@@ -73,7 +73,7 @@ export function uploadFile(uploadButton, input) {
 		}
 
 		for (let i = 0; i < input.files.length; i++) {
-			file = input.files[i];
+			const file = input.files[i];
 			createPreviewElement(file, i);
 		}
 	};

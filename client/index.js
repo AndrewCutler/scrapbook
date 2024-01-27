@@ -1,12 +1,14 @@
 import {
 	createUploadButton,
-	handleDownloadHeaderClick,
-	handleUploadHeaderClick,
 	uploadFile,
 } from './listeners.js';
+import { renderTabHeaders, renderUploadTab } from './ui.js';
 
 window.onload = function () {
 	const BASEURL = 'http://10.0.0.73:8000/api';
+
+    renderTabHeaders();
+    renderUploadTab();
 
 	async function downloadVideo(filename) {
 		const response = await fetch(`${BASEURL}/files/${filename}`).catch(
@@ -66,47 +68,12 @@ window.onload = function () {
 
 	(async () => await getThumbnails())();
 
-	// const previews = document.querySelector('#previews');
-
-	// function createPreviewElement(file, index) {
-	// 	const { name, size } = file;
-
-	// 	const previewListItem = document.createElement('li');
-	// 	previewListItem.classList.add('preview-item');
-	// 	previewListItem.id = `preview-${index}`;
-
-	// 	const previewDescription = document.createElement('span');
-	// 	previewDescription.textContent = `Name: ${name}; size: ${size}`;
-	// 	previewListItem.appendChild(previewDescription);
-
-	// 	const videoContainer = document.createElement('div');
-	// 	videoContainer.classList.add('video-container');
-	// 	const video = document.createElement('video');
-	// 	video.src = URL.createObjectURL(file);
-	// 	video.controls = true;
-	// 	video.muted = true;
-	// 	videoContainer.appendChild(video);
-
-	// 	const removeButton = document.createElement('a');
-	// 	removeButton.textContent = 'Remove';
-	// 	removeButton.style.cursor = 'pointer';
-	// 	removeButton.style.marginTop = '2px';
-	// 	removeButton.classList.add('button');
-	// 	removeButton.addEventListener('click', function () {
-	// 		console.log('delete ', index);
-	// 	});
-	// 	videoContainer.appendChild(removeButton);
-
-	// 	previewListItem.appendChild(videoContainer);
-	// 	previews.appendChild(previewListItem);
-	// }
-
 	const input = document.querySelector('#upload');
 	createUploadButton(input);
-	input.addEventListener('change', uploadFile(uploadFile, input));
+	input.addEventListener('change', uploadFile(input));
 
-	handleUploadHeaderClick();
-	handleDownloadHeaderClick();
+	// handleUploadHeaderClick();
+	// handleDownloadHeaderClick();
 
 	fetch('http://10.0.0.73:8000/api/test')
 		.then(console.log)
