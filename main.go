@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"scrapbook/utils"
+	utils "scrapbook/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -196,21 +196,6 @@ func getFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(b)
 }
-
-// func createThumbnail(filename string) {
-// 	f := strings.Trim(filename, filepath.Ext(filename))
-// 	var errbuff strings.Builder
-// 	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpeg
-// 	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+getThumbnailPathFromFilename(f))
-// 	cmd.Stderr = &errbuff
-// 	if err := cmd.Run(); err != nil {
-// 		fmt.Println(errbuff.String())
-// 	}
-// }
-
-// func getThumbnailPathFromFilename(filename string) string {
-// 	return strings.Trim(filename, filepath.Ext(filename)) + ".jpeg"
-// }
 
 func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
