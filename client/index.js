@@ -1,6 +1,12 @@
+import {
+	createUploadButton,
+	handleDownloadHeaderClick,
+	handleUploadHeaderClick,
+	uploadFile,
+} from './listeners.js';
+
 window.onload = function () {
 	const BASEURL = 'http://10.0.0.73:8000/api';
-	const MAX_FILES = 4;
 
 	async function downloadVideo(filename) {
 		const response = await fetch(`${BASEURL}/files/${filename}`).catch(
@@ -60,107 +66,47 @@ window.onload = function () {
 
 	(async () => await getThumbnails())();
 
-	const previews = document.querySelector('#previews');
+	// const previews = document.querySelector('#previews');
 
-	const uploadButton = document.querySelector('#submit');
-	uploadButton.style.display = 'none';
-	uploadButton.classList.add('button');
-	uploadButton.addEventListener('click', async function () {
-		// revoke object urls
-		const formData = new FormData();
-		for (let i = 0; i < input.files.length; i++) {
-			const file = input.files[i];
-			console.log({ i, file });
-			formData.append('files', file);
-		}
+	// function createPreviewElement(file, index) {
+	// 	const { name, size } = file;
 
-		await fetch(`${BASEURL}/save`, {
-			method: 'POST',
-			body: formData,
-		}).catch(console.error);
-	});
+	// 	const previewListItem = document.createElement('li');
+	// 	previewListItem.classList.add('preview-item');
+	// 	previewListItem.id = `preview-${index}`;
 
-	function createPreviewElement(file, index) {
-		const { name, size } = file;
+	// 	const previewDescription = document.createElement('span');
+	// 	previewDescription.textContent = `Name: ${name}; size: ${size}`;
+	// 	previewListItem.appendChild(previewDescription);
 
-		const previewListItem = document.createElement('li');
-		previewListItem.classList.add('preview-item');
-		previewListItem.id = `preview-${index}`;
+	// 	const videoContainer = document.createElement('div');
+	// 	videoContainer.classList.add('video-container');
+	// 	const video = document.createElement('video');
+	// 	video.src = URL.createObjectURL(file);
+	// 	video.controls = true;
+	// 	video.muted = true;
+	// 	videoContainer.appendChild(video);
 
-		const previewDescription = document.createElement('span');
-		previewDescription.textContent = `Name: ${name}; size: ${size}`;
-		previewListItem.appendChild(previewDescription);
+	// 	const removeButton = document.createElement('a');
+	// 	removeButton.textContent = 'Remove';
+	// 	removeButton.style.cursor = 'pointer';
+	// 	removeButton.style.marginTop = '2px';
+	// 	removeButton.classList.add('button');
+	// 	removeButton.addEventListener('click', function () {
+	// 		console.log('delete ', index);
+	// 	});
+	// 	videoContainer.appendChild(removeButton);
 
-		const videoContainer = document.createElement('div');
-		videoContainer.classList.add('video-container');
-		const video = document.createElement('video');
-		video.src = URL.createObjectURL(file);
-		video.controls = true;
-		video.muted = true;
-		videoContainer.appendChild(video);
-
-		const removeButton = document.createElement('a');
-		removeButton.textContent = 'Remove';
-		removeButton.style.cursor = 'pointer';
-		removeButton.style.marginTop = '2px';
-		removeButton.classList.add('button');
-		removeButton.addEventListener('click', function () {
-			console.log('delete ', index);
-		});
-		videoContainer.appendChild(removeButton);
-
-		previewListItem.appendChild(videoContainer);
-		previews.appendChild(previewListItem);
-	}
+	// 	previewListItem.appendChild(videoContainer);
+	// 	previews.appendChild(previewListItem);
+	// }
 
 	const input = document.querySelector('#upload');
+	createUploadButton(input);
+	input.addEventListener('change', uploadFile(uploadFile, input));
 
-	function uploadFile() {
-		uploadButton.style.display = input.files.length > 0 ? 'block' : 'none';
-
-		if (input.files.length > MAX_FILES) {
-			uploadButton.disabled = true;
-
-			const warning = document.createElement('small');
-			warning.textContent =
-				'A maximum of 5 files may be uploaded at once';
-			warning.style.color = '#e66';
-			document.querySelector('#input-container').appendChild(warning);
-
-			return;
-		}
-
-		for (let i = 0; i < input.files.length; i++) {
-			file = input.files[i];
-			createPreviewElement(file, i);
-		}
-	}
-
-	input.addEventListener('change', uploadFile);
-
-	function clearActiveHeaders() {
-		headers = document.querySelectorAll('.tab-headers li');
-		headers.forEach((header) => header.classList.remove('is-active'));
-	}
-
-	function setActiveHeader(header) {
-		clearActiveHeaders();
-		header.classList.add('is-active');
-	}
-
-	const uploadHeader = document.querySelector('#upload-header');
-	uploadHeader.addEventListener('click', function () {
-		setActiveHeader(uploadHeader);
-		document.querySelector('#files-tab').style.display = 'none';
-		document.querySelector('#upload-tab').style.display = 'block';
-	});
-
-	const downloadHeader = document.querySelector('#download-header');
-	downloadHeader.addEventListener('click', function () {
-		setActiveHeader(downloadHeader);
-		document.querySelector('#files-tab').style.display = 'grid';
-		document.querySelector('#upload-tab').style.display = 'none';
-	});
+	handleUploadHeaderClick();
+	handleDownloadHeaderClick();
 
 	fetch('http://10.0.0.73:8000/api/test')
 		.then(console.log)
