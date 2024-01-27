@@ -11,10 +11,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"scrapbook/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -114,7 +115,7 @@ func saveFileHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		createThumbnail(f.Filename)
+		utils.CreateThumbnail(f.Filename, fileDir)
 	}
 }
 
@@ -127,7 +128,7 @@ func buildFileListHandler(w http.ResponseWriter, r *http.Request) {
 	var filemeta []FileMeta
 	for _, f := range dir {
 		filename := fileDir + f.Name()
-		b, err := os.ReadFile("." + getThumbnailPathFromFilename(filename))
+		b, err := os.ReadFile("." + utils.GetThumbnailPathFromFilename(filename))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -152,7 +153,7 @@ func buildFileListHandler(w http.ResponseWriter, r *http.Request) {
 		// get image dimensions
 		height := 200
 		width := 200
-		reader, err := os.Open("." + getThumbnailPathFromFilename(filename))
+		reader, err := os.Open("." + utils.GetThumbnailPathFromFilename(filename))
 		defer reader.Close()
 		if err == nil {
 			im, _, err := image.DecodeConfig(reader)
@@ -196,24 +197,20 @@ func getFileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func getVideo(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get video")
-}
+// func createThumbnail(filename string) {
+// 	f := strings.Trim(filename, filepath.Ext(filename))
+// 	var errbuff strings.Builder
+// 	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpeg
+// 	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+getThumbnailPathFromFilename(f))
+// 	cmd.Stderr = &errbuff
+// 	if err := cmd.Run(); err != nil {
+// 		fmt.Println(errbuff.String())
+// 	}
+// }
 
-func createThumbnail(filename string) {
-	f := strings.Trim(filename, filepath.Ext(filename))
-	var errbuff strings.Builder
-	// ffmpeg -ss 1 -i .\input.mp4 -qscale:v 4 -frames:v 1 output.jpeg
-	cmd := exec.Command("ffmpeg", "-ss", "1", "-i", fileDir+filename, "-qscale:v", "4", "-frames:v", "1", fileDir+getThumbnailPathFromFilename(f))
-	cmd.Stderr = &errbuff
-	if err := cmd.Run(); err != nil {
-		fmt.Println(errbuff.String())
-	}
-}
-
-func getThumbnailPathFromFilename(filename string) string {
-	return strings.Trim(filename, filepath.Ext(filename)) + ".jpeg"
-}
+// func getThumbnailPathFromFilename(filename string) string {
+// 	return strings.Trim(filename, filepath.Ext(filename)) + ".jpeg"
+// }
 
 func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
