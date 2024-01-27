@@ -65,7 +65,8 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/test", useBasicAuth(getTestFileHandler)).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
-	r.HandleFunc("/api/files", useBasicAuth(buildFileListHandler)).Methods("GET")
+	r.HandleFunc("/api/files", buildFileListHandler).Methods("GET")
+	// r.HandleFunc("/api/files", useBasicAuth(buildFileListHandler)).Methods("GET")
 	r.HandleFunc("/api/files/{filename}", useBasicAuth(getFileHandler)).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
@@ -232,7 +233,6 @@ func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
 }
