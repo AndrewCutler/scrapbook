@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
@@ -21,6 +22,8 @@ import (
 )
 
 var fileDir = "./files/"
+var usernameHash = "H_sS1CDCKWW3qvSQwx97Kz2Gv2A="
+var pwHash = "8H6f5BJ4WdOwi2jgC6hrtFgKhLg="
 
 type FileMeta struct {
 	Name      string
@@ -72,18 +75,7 @@ func main() {
 	r.HandleFunc("/api/test", useBasicAuth(getTestFileHandler)).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
 	r.HandleFunc("/api/files", buildFileListHandler).Methods("GET")
-	r.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
-		body, readErr := io.ReadAll(r.Body)
-		if readErr != nil {
-			fmt.Println(readErr)
-		}
-		var creds Credentials
-		deserializeErr := json.Unmarshal(body, &creds)
-		if deserializeErr != nil {
-			fmt.Println(deserializeErr)
-		}
-		fmt.Println(creds.Password, creds.Username)
-	}).Methods("POST")
+	r.HandleFunc("/api/login", loginHandler).Methods("POST")
 	r.HandleFunc("/api/files/{filename}", useBasicAuth(getFileHandler)).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
@@ -96,6 +88,31 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	body, readErr := io.ReadAll(r.Body)
+	if readErr != nil {
+		fmt.Println(readErr)
+	}
+
+	var creds Credentials
+	deserializeErr := json.Unmarshal(body, &creds)
+	if deserializeErr != nil {
+		fmt.Println(deserializeErr)
+	}
+
+	hasher := sha1.New()
+	hasher.Write([]byte(creds.Username))
+	usernameSha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	hasher.Reset()
+	hasher.Write([]byte(creds.Password))
+	pwSha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	if usernameSha == usernameHash && pwSha == pwHash {
+		fmt.Println("Authenticated.")
+	}
+	fmt.Println("Username match: ", usernameSha == usernameHash, "Password match: ", pwSha == pwHash)
 }
 
 func getTestFileHandler(w http.ResponseWriter, r *http.Request) {
