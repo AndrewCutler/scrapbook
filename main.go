@@ -62,12 +62,28 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
+type Credentials struct {
+	Username string
+	Password string
+}
+
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/test", useBasicAuth(getTestFileHandler)).Methods("GET")
 	r.HandleFunc("/api/save", saveFileHandler).Methods("POST")
 	r.HandleFunc("/api/files", buildFileListHandler).Methods("GET")
-	// r.HandleFunc("/api/files", useBasicAuth(buildFileListHandler)).Methods("GET")
+	r.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
+		body, readErr := io.ReadAll(r.Body)
+		if readErr != nil {
+			fmt.Println(readErr)
+		}
+		var creds Credentials
+		deserializeErr := json.Unmarshal(body, &creds)
+		if deserializeErr != nil {
+			fmt.Println(deserializeErr)
+		}
+		fmt.Println(creds.Password, creds.Username)
+	}).Methods("POST")
 	r.HandleFunc("/api/files/{filename}", useBasicAuth(getFileHandler)).Methods("GET")
 
 	spa := spaHandler{staticPath: "client", indexPath: "index.html"}

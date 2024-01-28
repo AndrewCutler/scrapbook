@@ -8,11 +8,7 @@ import { renderTabHeaders, renderUploadTab } from './ui.js';
 window.onload = function () {
 	const BASEURL = 'http://10.0.0.73:8000/api';
 
-
     renderLogin();
-
-    // renderTabHeaders();
-    // renderUploadTab();
 
 	// async function downloadVideo(filename) {
 	// 	const response = await fetch(`${BASEURL}/files/${filename}`).catch(
