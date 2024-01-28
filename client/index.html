@@ -65,7 +65,65 @@
 				height: 200px;
 				width: 240px;
 			}
+
+			#login-container {
+				display: flex;
+				justify-content: center;
+				padding-top: 2vh;
+			}
+
+			.button {
+				background-color: #8fc5c2 !important;
+				border-color: #daffe1 !important;
+			}
+
+			.form-container {
+				display: flex;
+				justify-content: center;
+			}
+
+			form {
+				margin-top: 2vh;
+				border-radius: 5%;
+				border: 1px solid #daffe1;
+				background: #8fc5c2;
+				padding: 6px;
+				display: flex;
+				flex-direction: column;
+
+				.field {
+					margin: 12px;
+				}
+			}
 		</style>
 	</head>
-	<body></body>
+	<body>
+		<div class="form-container">
+			<form>
+				<div class="field">
+					<div class="label">Username</div>
+					<div class="control">
+						<input
+							type="text"
+							name="username"
+							id="username"
+							placeholder="Username"
+						/>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Password</div>
+					<div class="control">
+						<input
+							type="password"
+							name="password"
+							id="password"
+							placeholder="Password"
+						/>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
 </html>
