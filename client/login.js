@@ -94,8 +94,8 @@ function renderLoginButton() {
 		fetch('http://10.0.0.73:8000/api/login', {
 			method: 'POST',
 			body: JSON.stringify({
-				username: 'username',
-				password: 'password',
+				username: formData.get('username'),
+				password: formData.get('password'),
 			}),
 		});
 	});
