@@ -22,8 +22,6 @@ import (
 )
 
 var fileDir = "./files/"
-var usernameHash = "H_sS1CDCKWW3qvSQwx97Kz2Gv2A="
-var pwHash = "8H6f5BJ4WdOwi2jgC6hrtFgKhLg="
 
 type FileMeta struct {
 	Name      string
@@ -33,12 +31,17 @@ type FileMeta struct {
 	Width     int
 }
 
-type spaHandler struct {
+type SpaHandler struct {
 	staticPath string
 	indexPath  string
 }
 
-func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type Config struct {
+	Username string
+	Password string
+}
+
+func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Join internally call path.Clean to prevent directory traversal
 	if strings.HasPrefix(r.URL.Path, "/api") {
 		return
@@ -65,11 +68,6 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
-type Credentials struct {
-	Username string
-	Password string
-}
-
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/test", useBasicAuth(getTestFileHandler)).Methods("GET")
@@ -78,7 +76,7 @@ func main() {
 	r.HandleFunc("/api/login", loginHandler).Methods("POST")
 	r.HandleFunc("/api/files/{filename}", useBasicAuth(getFileHandler)).Methods("GET")
 
-	spa := spaHandler{staticPath: "client", indexPath: "index.html"}
+	spa := SpaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
 	srv := &http.Server{
 		Handler:      r,
@@ -96,7 +94,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(readErr)
 	}
 
-	var creds Credentials
+	var creds Config
 	deserializeErr := json.Unmarshal(body, &creds)
 	if deserializeErr != nil {
 		fmt.Println(deserializeErr)
@@ -109,10 +107,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	hasher.Write([]byte(creds.Password))
 	pwSha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
-	if usernameSha == usernameHash && pwSha == pwHash {
+	config := readConfig()
+
+	if usernameSha == config.Username && pwSha == config.Password {
 		fmt.Println("Authenticated.")
+	} else {
+		fmt.Println("Not authenticated.")
 	}
-	fmt.Println("Username match: ", usernameSha == usernameHash, "Password match: ", pwSha == pwHash)
 }
 
 func getTestFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -250,4 +251,17 @@ func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
+}
+
+func readConfig() Config {
+	file, _ := os.Open("./config.json")
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	config := Config{}
+	err := decoder.Decode(&config)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return config
 }
