@@ -1,4 +1,26 @@
-function login() {}
+import { renderTabHeaders, renderUploadTab } from './ui.js';
+
+async function login(formData, form) {
+    clearLoginError();
+
+	const response = await fetch('http://10.0.0.73:8000/api/login', {
+		method: 'POST',
+		body: JSON.stringify({
+			username: formData.get('username'),
+			password: formData.get('password'),
+		}),
+	});
+
+	if (response.status === 200) {
+		// remove login form
+		form.remove();
+		// render content
+		renderTabHeaders();
+		renderUploadTab();
+	} else {
+		renderLoginError();
+	}
+}
 
 function renderLoginError() {
 	const loginError = document.createElement('div');
@@ -18,6 +40,11 @@ function renderLoginError() {
 	loginError.appendChild(message);
 
 	document.body.appendChild(loginError);
+}
+
+function clearLoginError() {
+	const loginError = document.querySelector('#login-error');
+	if (loginError) loginError.remove();
 }
 
 function renderLoginForm() {
@@ -91,17 +118,7 @@ function renderLoginButton() {
 			return;
 		}
 
-		const response = await fetch('http://10.0.0.73:8000/api/login', {
-			method: 'POST',
-			body: JSON.stringify({
-				username: formData.get('username'),
-				password: formData.get('password'),
-			}),
-		});
-
-        if (response.status === 200) {
-            // render content
-        }
+		login(formData, form);
 	});
 }
 
