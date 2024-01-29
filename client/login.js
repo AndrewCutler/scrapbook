@@ -78,7 +78,7 @@ function renderLoginButton() {
 
 	const form = document.getElementById('login-form');
 	form.appendChild(loginButtonContainer);
-	form.addEventListener('submit', function (e) {
+	form.addEventListener('submit', async function (e) {
 		e.preventDefault();
 		const formData = new FormData(e.target);
 
@@ -91,13 +91,17 @@ function renderLoginButton() {
 			return;
 		}
 
-		fetch('http://10.0.0.73:8000/api/login', {
+		const response = await fetch('http://10.0.0.73:8000/api/login', {
 			method: 'POST',
 			body: JSON.stringify({
 				username: formData.get('username'),
 				password: formData.get('password'),
 			}),
 		});
+
+        if (response.status === 200) {
+            // render content
+        }
 	});
 }
 

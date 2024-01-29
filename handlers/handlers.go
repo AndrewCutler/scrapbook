@@ -53,8 +53,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if usernameSha == config.Username && pwSha == config.Password {
 		fmt.Println("Authenticated.")
+		w.WriteHeader(http.StatusOK)
 	} else {
 		fmt.Println("Not authenticated.")
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
 
@@ -174,13 +176,16 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func readConfig() Config {
-	file, _ := os.Open("./config.json")
+	file, readErr := os.Open("./config.json")
+	if readErr != nil {
+		fmt.Println(readErr)
+	}
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	config := Config{}
-	err := decoder.Decode(&config)
-	if err != nil {
-		fmt.Println(err)
+	decodeErr := decoder.Decode(&config)
+	if decodeErr != nil {
+		fmt.Println("decodeErr: ", decodeErr)
 	}
 
 	return config
