@@ -1,9 +1,10 @@
+import { Config } from './index.js';
 import { renderTabHeaders, renderUploadTab } from './ui.js';
 
 async function login(formData, form) {
-    clearLoginError();
+	clearLoginError();
 
-	const response = await fetch('http://10.0.0.73:8000/api/login', {
+	const response = await fetch(`${Config.baseUrl}/login`, {
 		method: 'POST',
 		body: JSON.stringify({
 			username: formData.get('username'),

@@ -1,3 +1,4 @@
+import { Config } from './index.js';
 import {
 	handleDownloadHeaderClick,
 	handleUploadHeaderClick,

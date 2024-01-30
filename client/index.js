@@ -1,14 +1,26 @@
-import {
-	createUploadButton,
-	uploadFile,
-} from './listeners.js';
+import { createUploadButton, uploadFile } from './listeners.js';
 import { renderLogin } from './login.js';
 import { renderTabHeaders, renderUploadTab } from './ui.js';
 
-window.onload = function () {
-	const BASEURL = 'http://10.0.0.73:8000/api';
+export const Config = {
+	baseUrl: '',
+};
 
-    renderLogin();
+export async function getConfig() {
+	try {
+		const data = await fetch('./config.json');
+		const json = await data.json();
+		Config.baseUrl = json.baseUrl;
+		console.log({ Config });
+	} catch (err) {
+		console.error(err);
+	}
+}
+
+window.onload = function () {
+	(async () => await getConfig())();
+
+	renderLogin();
 
 	// async function downloadVideo(filename) {
 	// 	const response = await fetch(`${BASEURL}/files/${filename}`).catch(
