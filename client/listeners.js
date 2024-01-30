@@ -1,4 +1,5 @@
-import { Config } from "./index.js";
+import { Config } from './index.js';
+import { renderDownloadTab } from './ui.js';
 
 const MAX_FILES = 4;
 
@@ -104,15 +105,17 @@ export function handleDownloadHeaderClick() {
 	const downloadHeader = document.querySelector('#download-header');
 	downloadHeader.addEventListener('click', function () {
 		setActiveHeader(downloadHeader);
+		renderDownloadTab();
 		document.querySelector('#files-tab').style.display = 'grid';
 		document.querySelector('#upload-tab').style.display = 'none';
+		(async () => await getFiles())();
 	});
-
-	(async () => await getFiles())();
 }
 
 async function getFiles() {
-	const response = await fetch(`${Config.baseUrl}/files`).catch(console.error);
+	const response = await fetch(`${Config.baseUrl}/files`).catch(
+		console.error,
+	);
 	try {
 		const thumbnails = await response.json();
 		renderFileData(thumbnails);
@@ -137,6 +140,7 @@ async function downloadVideo(filename) {
 }
 
 function renderFileData(thumbnails) {
+	console.log({ thumbnails });
 	for (const curr of thumbnails) {
 		const fileDiv = document.createElement('div');
 

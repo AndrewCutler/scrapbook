@@ -1,6 +1,4 @@
-import { createUploadButton, uploadFile } from './listeners.js';
 import { renderLogin } from './login.js';
-import { renderTabHeaders, renderUploadTab } from './ui.js';
 
 export const Config = {
 	baseUrl: '',
@@ -11,7 +9,6 @@ export async function getConfig() {
 		const data = await fetch('./config.json');
 		const json = await data.json();
 		Config.baseUrl = json.baseUrl;
-		console.log({ Config });
 	} catch (err) {
 		console.error(err);
 	}

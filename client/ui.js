@@ -70,11 +70,13 @@ export function renderUploadTab() {
 
 	uploadTab.appendChild(uploadContainer);
 
+	document.querySelector('body').appendChild(uploadTab);
+}
+
+export function renderDownloadTab() {
 	const fileContainer = document.createElement('div');
 	fileContainer.id = 'files-tab';
 	fileContainer.classList.add('files-container');
 
-	uploadTab.appendChild(fileContainer);
-
-	document.querySelector('body').appendChild(uploadTab);
+	document.querySelector('body').appendChild(fileContainer);
 }
