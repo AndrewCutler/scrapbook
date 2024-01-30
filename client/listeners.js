@@ -1,9 +1,11 @@
 import { Config } from './index.js';
 import { renderDownloadTab } from './ui.js';
 
+// todo: split up this file
 const MAX_FILES = 4;
 
-export function createUploadButton(input) {
+export function renderUploadButton() {
+	const input = document.querySelector('#upload');
 	const uploadButton = document.querySelector('#submit');
 	uploadButton.style.display = 'none';
 	uploadButton.classList.add('button');
@@ -21,6 +23,7 @@ export function createUploadButton(input) {
 			body: formData,
 		}).catch(console.error);
 	});
+	input.addEventListener('change', uploadFile(input));
 }
 
 function createPreviewElement(file, index) {

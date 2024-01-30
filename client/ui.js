@@ -1,5 +1,6 @@
 import { Config } from './index.js';
 import {
+    renderUploadButton,
 	handleDownloadHeaderClick,
 	handleUploadHeaderClick,
 } from './listeners.js';
@@ -71,6 +72,8 @@ export function renderUploadTab() {
 	uploadTab.appendChild(uploadContainer);
 
 	document.querySelector('body').appendChild(uploadTab);
+
+    renderUploadButton();
 }
 
 export function renderDownloadTab() {
