@@ -67,6 +67,7 @@ func GetTestFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(b)
+	w.Header().Set("Cache-Control", "max-age=10000000")
 }
 
 func SaveFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +156,7 @@ func BuildFileListHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application-json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Cache-Control", "max-age=600")
 	json.NewEncoder(w).Encode(filemeta)
 
 }

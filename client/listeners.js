@@ -111,6 +111,8 @@ export function handleDownloadHeaderClick() {
 		renderDownloadTab();
 		document.querySelector('#files-tab').style.display = 'grid';
 		document.querySelector('#upload-tab').style.display = 'none';
+        // bug: duplicates files every time;
+        // should be cached and reset each time files are fetched
 		(async () => await getFiles())();
 	});
 }
