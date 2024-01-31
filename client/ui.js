@@ -1,6 +1,6 @@
 import { Config } from './index.js';
 import {
-    renderUploadButton,
+	renderUploadButton,
 	handleDownloadHeaderClick,
 	handleUploadHeaderClick,
 } from './listeners.js';
@@ -36,6 +36,7 @@ export function renderTabHeaders() {
 }
 
 export function renderUploadTab() {
+	document.querySelector('#files-tab')?.remove();
 	const uploadTab = document.createElement('div');
 	uploadTab.id = 'upload-tab';
 
@@ -73,13 +74,13 @@ export function renderUploadTab() {
 
 	document.querySelector('body').appendChild(uploadTab);
 
-    renderUploadButton();
+	renderUploadButton();
 }
 
 export function renderDownloadTab() {
+	document.querySelector('#upload-tab')?.remove();
 	const fileContainer = document.createElement('div');
 	fileContainer.id = 'files-tab';
-	fileContainer.classList.add('files-container');
 
 	document.querySelector('body').appendChild(fileContainer);
 }

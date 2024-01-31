@@ -1,5 +1,5 @@
 import { Config } from './index.js';
-import { renderDownloadTab } from './ui.js';
+import { renderDownloadTab, renderUploadTab } from './ui.js';
 
 // todo: split up this file
 const MAX_FILES = 4;
@@ -99,8 +99,7 @@ export function handleUploadHeaderClick() {
 	const uploadHeader = document.querySelector('#upload-header');
 	uploadHeader.addEventListener('click', function () {
 		setActiveHeader(uploadHeader);
-		document.querySelector('#files-tab').style.display = 'none';
-		document.querySelector('#upload-tab').style.display = 'block';
+		renderUploadTab();
 	});
 }
 
@@ -109,10 +108,6 @@ export function handleDownloadHeaderClick() {
 	downloadHeader.addEventListener('click', function () {
 		setActiveHeader(downloadHeader);
 		renderDownloadTab();
-		document.querySelector('#files-tab').style.display = 'grid';
-		document.querySelector('#upload-tab').style.display = 'none';
-        // bug: duplicates files every time;
-        // should be cached and reset each time files are fetched
 		(async () => await getFiles())();
 	});
 }
@@ -145,7 +140,6 @@ async function downloadVideo(filename) {
 }
 
 function renderFileData(thumbnails) {
-	console.log({ thumbnails });
 	for (const curr of thumbnails) {
 		const fileDiv = document.createElement('div');
 
