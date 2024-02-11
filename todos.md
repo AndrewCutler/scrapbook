@@ -1,2 +1,2 @@
 * timestamp for when the video was uploaded
-* separate tabs/pages/whatever for upload/download
+* open file explorer to upload files instead of camera
