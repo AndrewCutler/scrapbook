@@ -85,7 +85,7 @@ export function uploadFile(input) {
 				createPreviewElement(file, i);
 			} else {
 				console.log(`invalid format: ${file.name}`);
-				renderError('login');
+				renderError('file-format');
 			}
 		}
 	};

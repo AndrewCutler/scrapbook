@@ -22,7 +22,7 @@ export function renderError(type) {
 				messageBody.innerText = 'Invalid username/password.';
 				break;
 			case 'file-format':
-				messageBody.innerText = 'Invalid file.';
+				messageBody.innerText = 'Invalid file type.';
 				break;
 			default:
 				break;
@@ -33,9 +33,21 @@ export function renderError(type) {
 
 		document.body.appendChild(error);
 
+		let time = 0;
+		let opacity = 1.0;
+		const INTERVAL = 50;
+		const interval = setInterval(function () {
+			time += INTERVAL;
+
+			if (time >= 4000) {
+				opacity -= 0.1;
+				error.style.opacity = opacity;
+			}
+		}, INTERVAL);
 		setTimeout(function () {
 			error.remove();
-		}, 8000);
+			clearInterval(interval);
+		}, 5000);
 	}
 }
 
