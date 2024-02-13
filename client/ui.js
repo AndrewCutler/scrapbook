@@ -1,9 +1,43 @@
-import { Config } from './index.js';
 import {
 	renderUploadButton,
 	handleDownloadHeaderClick,
 	handleUploadHeaderClick,
 } from './listeners.js';
+
+export function renderError(type) {
+	if (['login', 'file-format'].includes(type)) {
+		const error = document.createElement('div');
+		error.id = `${type}-error`;
+
+		const message = document.createElement('article');
+		message.classList.add('message', 'is-danger');
+		const messageHeader = document.createElement('div');
+		messageHeader.classList.add('message-header');
+		messageHeader.innerHTML = '<p>Error</p>';
+		message.appendChild(messageHeader);
+		const messageBody = document.createElement('div');
+		messageBody.classList.add('message-body');
+		switch (type) {
+			case 'login':
+				messageBody.innerText = 'Invalid username/password.';
+				break;
+			case 'file-format':
+				messageBody.innerText = 'Invalid file.';
+				break;
+			default:
+				break;
+		}
+		message.appendChild(messageBody);
+
+		error.appendChild(message);
+
+		document.body.appendChild(error);
+
+		setTimeout(function () {
+			error.remove();
+		}, 8000);
+	}
+}
 
 export function renderTabHeaders() {
 	const tabContainer = document.createElement('div');
@@ -53,8 +87,11 @@ export function renderUploadTab() {
 	input.name = 'upload';
 	input.id = 'upload';
 	input.multiple = true;
-	input.capture = true;
-	input.accept = 'video/*';
+	// input.capture = true;
+	// input.accept = 'image/*';
+	// input.addEventListener('change', function (e) {
+	// 	return validateFile(file, ['.mp4']);
+	// });
 	inputContainer.appendChild(input);
 	uploadContainer.appendChild(inputContainer);
 

@@ -1,5 +1,5 @@
 import { Config } from './index.js';
-import { renderTabHeaders, renderUploadTab } from './ui.js';
+import { renderError, renderTabHeaders, renderUploadTab } from './ui.js';
 
 async function login(formData, form) {
 	clearLoginError();
@@ -7,7 +7,7 @@ async function login(formData, form) {
 	const response = await fetch(`${Config.baseUrl}/login`, {
 		method: 'POST',
 		body: JSON.stringify({
-			username: formData.get('username'),
+			username: formData.get('username')?.toLowerCase(),
 			password: formData.get('password'),
 		}),
 	});
@@ -19,28 +19,8 @@ async function login(formData, form) {
 		renderTabHeaders();
 		renderUploadTab();
 	} else {
-		renderLoginError();
+		renderError('login');
 	}
-}
-
-function renderLoginError() {
-	const loginError = document.createElement('div');
-	loginError.id = 'login-error';
-
-	const message = document.createElement('article');
-	message.classList.add('message', 'is-danger');
-	const messageHeader = document.createElement('div');
-	messageHeader.classList.add('message-header');
-	messageHeader.innerHTML = '<p>Error</p>';
-	message.appendChild(messageHeader);
-	const messageBody = document.createElement('div');
-	messageBody.classList.add('message-body');
-	messageBody.innerText = 'Invalid username/password.';
-	message.appendChild(messageBody);
-
-	loginError.appendChild(message);
-
-	document.body.appendChild(loginError);
 }
 
 function clearLoginError() {
@@ -114,7 +94,7 @@ function renderLoginButton() {
 			formData.get('username')?.length < 3 ||
 			formData.get('password')?.length < 3
 		) {
-			renderLoginError();
+			renderError();
 
 			return;
 		}

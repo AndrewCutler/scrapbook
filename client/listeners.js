@@ -1,5 +1,5 @@
 import { Config } from './index.js';
-import { renderDownloadTab, renderUploadTab } from './ui.js';
+import { renderDownloadTab, renderError, renderUploadTab } from './ui.js';
 
 // todo: split up this file
 const MAX_FILES = 4;
@@ -80,9 +80,24 @@ export function uploadFile(input) {
 
 		for (let i = 0; i < input.files.length; i++) {
 			const file = input.files[i];
-			createPreviewElement(file, i);
+			const isValid = validateFile(file, ['.mp4']);
+			if (isValid) {
+				createPreviewElement(file, i);
+			} else {
+				console.log(`invalid format: ${file.name}`);
+				renderError('login');
+			}
 		}
 	};
+}
+
+function validateFile(file, acceptedFormats) {
+	console.log({ file });
+	if (acceptedFormats.some((f) => file.name.endsWith(f))) {
+		return true;
+	}
+
+	return false;
 }
 
 function clearActiveHeaders() {
