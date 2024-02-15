@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
-	"crypto/subtle"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"scrapbook/auth"
 	handlers "scrapbook/handlers"
 
 	"github.com/gorilla/mux"
@@ -51,11 +50,11 @@ func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/test", useBasicAuth(handlers.GetTestFileHandler)).Methods("GET")
+	r.HandleFunc("/api/test", auth.UseBasicAuth(handlers.GetTestFileHandler)).Methods("GET")
 	r.HandleFunc("/api/save", handlers.SaveFileHandler).Methods("POST")
 	r.HandleFunc("/api/files", handlers.BuildFileListHandler).Methods("GET")
 	r.HandleFunc("/api/login", handlers.LoginHandler).Methods("POST")
-	r.HandleFunc("/api/files/{filename}", useBasicAuth(handlers.GetFileHandler)).Methods("GET")
+	r.HandleFunc("/api/files/{filename}", auth.UseBasicAuth(handlers.GetFileHandler)).Methods("GET")
 
 	spa := SpaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
@@ -67,26 +66,4 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
-}
-
-func useBasicAuth(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username, pw, ok := r.BasicAuth()
-		if ok {
-			usernameHash := sha256.Sum256([]byte(username))
-			passwordHash := sha256.Sum256([]byte(pw))
-			expectedUsernameHash := sha256.Sum256([]byte("username"))
-			expectedPasswordHash := sha256.Sum256([]byte("password"))
-
-			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
-			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
-
-			if usernameMatch && passwordMatch {
-				next.ServeHTTP(w, r)
-				return
-			}
-		}
-
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	})
 }
