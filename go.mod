@@ -7,6 +7,7 @@ require (
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/gorilla/schema v1.2.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/rs/cors v1.10.1 // indirect
 )

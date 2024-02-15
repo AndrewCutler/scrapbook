@@ -12,7 +12,9 @@ import (
 	"os"
 	"scrapbook/utils"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -33,13 +35,17 @@ type Config struct {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, readErr := io.ReadAll(r.Body)
 	if readErr != nil {
-		fmt.Println(readErr)
+		http.Error(w, "Error reading body", http.StatusBadRequest)
+		return
 	}
 
 	var creds Config
+	fmt.Println(string(body))
 	deserializeErr := json.Unmarshal(body, &creds)
 	if deserializeErr != nil {
 		fmt.Println(deserializeErr)
+		http.Error(w, "Deserialization error", http.StatusBadRequest)
+		return
 	}
 
 	hasher := sha1.New()
@@ -53,6 +59,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if usernameSha == config.Username && pwSha == config.Password {
 		fmt.Println("Authenticated.")
+		token := uuid.NewString()
+		expiration := time.Now().Add(3000 * time.Second)
+
+		// s = session{
+		// 	expiration: expiration,
+		// 	username:   username,
+		// }
+		http.SetCookie(w, &http.Cookie{
+			Name:    "session_token",
+			Value:   token,
+			Expires: expiration,
+		})
+
 		w.WriteHeader(http.StatusOK)
 	} else {
 		fmt.Println("Not authenticated.")

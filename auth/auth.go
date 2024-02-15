@@ -10,9 +10,27 @@ import (
 	"github.com/google/uuid"
 )
 
-func UseBasicAuth(next http.HandlerFunc) http.HandlerFunc {
-	var s = session{}
+func WithSession(next http.HandlerFunc) http.HandlerFunc {
+	session := new(Session)
+
+	return Authenticate(next, session)
+}
+
+func Authenticate(next http.HandlerFunc, s *Session) http.HandlerFunc {
+	fmt.Println("use auth")
+	// var s = Session{}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form data", http.StatusBadRequest)
+			return
+		}
+
+		un := r.Form.Get("username")
+		passw := r.Form.Get("password")
+
+		fmt.Println("username and password: ", un, " ", passw)
+
 		username, pw, ok := r.BasicAuth()
 		if ok {
 			usernameHash := sha256.Sum256([]byte(username))
@@ -23,12 +41,26 @@ func UseBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
 			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
 
+			cookie, err := r.Cookie("session_token")
+			if err != nil {
+				fmt.Println(err)
+				if err == http.ErrNoCookie {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			fmt.Println(cookie)
+
 			if usernameMatch && passwordMatch {
 				next.ServeHTTP(w, r)
 				token := uuid.NewString()
 				expiration := time.Now().Add(3000 * time.Second)
 
-				s = session{
+				s = &Session{
 					expiration: expiration,
 					username:   username,
 				}
@@ -43,16 +75,16 @@ func UseBasicAuth(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorized :(", http.StatusUnauthorized)
 	})
 }
 
-type session struct {
+type Session struct {
 	username   string
 	expiration time.Time
 }
 
-func (s *session) isExpired() bool {
+func (s *Session) isExpired() bool {
 	return s.expiration.Before(time.Now())
 }
 
