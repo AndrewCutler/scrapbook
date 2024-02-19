@@ -50,12 +50,13 @@ func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter()
+	session := new(auth.Session)
 
 	r.HandleFunc("/api/test", handlers.GetTestFileHandler).Methods("GET")
-	r.HandleFunc("/api/save", handlers.SaveFileHandler).Methods("POST")
-	r.HandleFunc("/api/files", auth.WithSession(handlers.BuildFileListHandler)).Methods("GET")
-	r.HandleFunc("/api/login", handlers.LoginHandler).Methods("POST")
-	r.HandleFunc("/api/files/{filename}", handlers.GetFileHandler).Methods("GET")
+	r.HandleFunc("/api/save", auth.Authenticate(handlers.SaveFileHandler, session)).Methods("POST")
+	r.HandleFunc("/api/files", auth.Authenticate(handlers.BuildFileListHandler, session)).Methods("GET")
+	r.HandleFunc("/api/login", auth.WithSession(handlers.LoginHandler, session)).Methods("POST")
+	r.HandleFunc("/api/files/{filename}", auth.Authenticate(handlers.GetFileHandler, session)).Methods("GET")
 
 	spa := SpaHandler{staticPath: "client", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
