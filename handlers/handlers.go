@@ -10,9 +10,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"scrapbook/utils"
 	"strings"
 	"time"
+
+	utils "scrapbook/utils"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -27,10 +28,6 @@ type FileMeta struct {
 	Height    int
 	Width     int
 }
-type Config struct {
-	Username string
-	Password string
-}
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, readErr := io.ReadAll(r.Body)
@@ -39,7 +36,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var creds Config
+	var creds utils.Config
 	fmt.Println(string(body))
 	deserializeErr := json.Unmarshal(body, &creds)
 	if deserializeErr != nil {
@@ -55,17 +52,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	hasher.Write([]byte(creds.Password))
 	pwSha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
-	config := readConfig()
+	config := utils.ReadConfig()
 
 	if usernameSha == config.Username && pwSha == config.Password {
 		fmt.Println("Authenticated.")
 		token := uuid.NewString()
 		expiration := time.Now().Add(3000 * time.Second)
 
-		// s = session{
-		// 	expiration: expiration,
-		// 	username:   username,
-		// }
 		http.SetCookie(w, &http.Cookie{
 			Name:    "session_token",
 			Value:   token,
@@ -194,20 +187,4 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(b)
-}
-
-func readConfig() Config {
-	file, readErr := os.Open("./config.json")
-	if readErr != nil {
-		fmt.Println(readErr)
-	}
-	defer file.Close()
-	decoder := json.NewDecoder(file)
-	config := Config{}
-	decodeErr := decoder.Decode(&config)
-	if decodeErr != nil {
-		fmt.Println("decodeErr: ", decodeErr)
-	}
-
-	return config
 }

@@ -1,13 +1,35 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
+type Config struct {
+	Username string
+	Password string
+}
+
+func ReadConfig() Config {
+	file, readErr := os.Open("./config.json")
+	if readErr != nil {
+		fmt.Println(readErr)
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	config := Config{}
+	decodeErr := decoder.Decode(&config)
+	if decodeErr != nil {
+		fmt.Println("decodeErr: ", decodeErr)
+	}
+
+	return config
+}
 func GetVideo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("get video")
 }
