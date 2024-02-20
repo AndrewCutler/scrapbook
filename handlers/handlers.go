@@ -10,9 +10,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"scrapbook/utils"
+	"path/filepath"
 	"strings"
 	"time"
+
+	utils "scrapbook/utils"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -27,11 +29,38 @@ type FileMeta struct {
 	Height    int
 	Width     int
 }
-type Config struct {
-	Username string
-	Password string
+
+type SpaHandler struct {
+	StaticPath string
+	IndexPath  string
 }
 
+func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Join internally call path.Clean to prevent directory traversal
+	if strings.HasPrefix(r.URL.Path, "/api") {
+		return
+	}
+
+	path := filepath.Join(h.StaticPath, r.URL.Path)
+
+	// check whether a file exists or is a directory at the given path
+	fi, err := os.Stat(path)
+	if os.IsNotExist(err) || fi.IsDir() {
+		// file does not exist or path is a directory, serve index.html
+		http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexPath))
+		return
+	}
+
+	if err != nil {
+		// if we got an error (that wasn't that the file doesn't exist) stating the
+		// file, return a 500 internal server error and stop
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// otherwise, use http.FileServer to serve the static file
+	http.FileServer(http.Dir(h.StaticPath)).ServeHTTP(w, r)
+}
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, readErr := io.ReadAll(r.Body)
 	if readErr != nil {
@@ -39,7 +68,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var creds Config
+	var creds utils.Config
 	fmt.Println(string(body))
 	deserializeErr := json.Unmarshal(body, &creds)
 	if deserializeErr != nil {
@@ -55,17 +84,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	hasher.Write([]byte(creds.Password))
 	pwSha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
-	config := readConfig()
+	config := utils.ReadConfig()
 
 	if usernameSha == config.Username && pwSha == config.Password {
 		fmt.Println("Authenticated.")
 		token := uuid.NewString()
 		expiration := time.Now().Add(3000 * time.Second)
 
-		// s = session{
-		// 	expiration: expiration,
-		// 	username:   username,
-		// }
 		http.SetCookie(w, &http.Cookie{
 			Name:    "session_token",
 			Value:   token,
@@ -194,20 +219,4 @@ func GetFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(b)
-}
-
-func readConfig() Config {
-	file, readErr := os.Open("./config.json")
-	if readErr != nil {
-		fmt.Println(readErr)
-	}
-	defer file.Close()
-	decoder := json.NewDecoder(file)
-	config := Config{}
-	decodeErr := decoder.Decode(&config)
-	if decodeErr != nil {
-		fmt.Println("decodeErr: ", decodeErr)
-	}
-
-	return config
 }
