@@ -51,6 +51,11 @@ export function renderError(type) {
 	}
 }
 
+export function renderApp() {
+	renderTabHeaders();
+	renderUploadTab();
+}
+
 export function renderTabHeaders() {
 	const tabContainer = document.createElement('div');
 	tabContainer.classList.add('tabs');

@@ -92,9 +92,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		expiration := time.Now().Add(3000 * time.Second)
 
 		http.SetCookie(w, &http.Cookie{
-			Name:    "session_token",
-			Value:   token,
-			Expires: expiration,
+			Name:     "session_token",
+			HttpOnly: false,
+			Value:    token,
+			Expires:  expiration,
 		})
 
 		w.WriteHeader(http.StatusOK)
@@ -105,6 +106,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTestFileHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("api test")
 	b, err := os.ReadFile("./client/test.js")
 	if err != nil {
 		fmt.Println(err)

@@ -1,5 +1,5 @@
 import { Config } from './index.js';
-import { renderError, renderTabHeaders, renderUploadTab } from './ui.js';
+import { renderError, renderApp } from './ui.js';
 
 async function login(formData, form) {
 	clearLoginError();
@@ -16,8 +16,7 @@ async function login(formData, form) {
 		// remove login form
 		form.remove();
 		// render content
-		renderTabHeaders();
-		renderUploadTab();
+        renderApp();
 	} else {
 		renderError('login');
 	}

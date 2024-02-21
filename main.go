@@ -17,7 +17,7 @@ func main() {
 	r := mux.NewRouter()
 	session := new(auth.Session)
 
-	r.HandleFunc("/api/test", handlers.GetTestFileHandler).Methods("GET")
+	r.HandleFunc("/api/test", auth.Authenticate(handlers.GetTestFileHandler, session)).Methods("GET")
 	r.HandleFunc("/api/save", auth.Authenticate(handlers.SaveFileHandler, session)).Methods("POST")
 	r.HandleFunc("/api/files", auth.Authenticate(handlers.BuildFileListHandler, session)).Methods("GET")
 	r.HandleFunc("/api/login", auth.WithSession(handlers.LoginHandler, session)).Methods("POST")
